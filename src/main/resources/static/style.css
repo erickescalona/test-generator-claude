@@ -1,0 +1,22 @@
+/* Add your CSS styling here for the web interface */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+h1 {
+    color: #333;
+    text-align: center;
+}
+p {
+    color: #666;
+    line-height: 1.5;
+}
+a {
+    color: #008cba;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
