@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test Generator - Claude AI</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Test Generator</h1>
+            <p class="subtitle">Genera pruebas unitarias automáticas con Claude AI</p>
+        </div>
+
+        <div class="content">
+            <div class="upload-section">
+                <div class="dropzone" id="dropzone">
+                    <div class="dropzone-content">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <h2>Arrastra tu archivo ZIP aquí</h2>
+                        <p>o haz clic para seleccionar</p>
+                        <input type="file" id="fileInput" accept=".zip" hidden>
+                    </div>
+                </div>
+
+                <div class="options">
+                    <label>
+                        <input type="checkbox" id="includeAnalysis" checked>
+                        Incluir análisis de código
+                    </label>
+                </div>
+
+                <button id="generateBtn" class="btn btn-primary" disabled>
+                    Generar Tests
+                </button>
+                <button id="downloadBtn" class="btn btn-success" style="display:none;">
+                    📥 Descargar Tests
+                </button>
+            </div>
+
+            <div id="progressSection" style="display:none;" class="progress-section">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <p id="progressText">Generando tests...</p>
+            </div>
+
+            <div id="resultsSection" style="display:none;" class="results-section">
+                <h2>Resultados</h2>
+                <div id="resultStats" class="result-stats"></div>
+                <div id="testsList" class="tests-list"></div>
+            </div>
+
+            <div id="errorSection" style="display:none;" class="error-section">
+                <h3>⚠️ Error</h3>
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Test Generator v1.0 | Powered by Claude AI 🚀</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let generatedResult = null;
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.add('highlight'));
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.remove('highlight'));
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            handleFileSelect();
+        });
+
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file && file.name.endsWith('.zip')) {
+                selectedFile = file;
+                generateBtn.disabled = false;
+                dropzone.classList.add('selected');
+                dropzone.querySelector('.dropzone-content').innerHTML = 
+                    `✅ Archivo seleccionado: <strong>${file.name}</strong>`;
+            } else {
+                alert('Por favor selecciona un archivo ZIP válido');
+            }
+        }
+
+        generateBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('includeAnalysis', document.getElementById('includeAnalysis').checked);
+
+            showProgress();
+            hideError();
+
+            try {
+                const response = await fetch('/api/generate-tests', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+                generatedResult = await response.json();
+                displayResults(generatedResult);
+                downloadBtn.style.display = 'block';
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                hideProgress();
+            }
+        });
+
+        downloadBtn.addEventListener('click', async () => {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/api/generate-and-download', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Error descargando archivo');
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'tests_generated.zip';
+                a.click();
+                window.URL.revokeObjectURL(url);
+
+            } catch (error) {
+                showError('Error descargando tests: ' + error.message);
+            }
+        });
+
+        function displayResults(result) {
+            const statsHtml = `
+                <div class="stat">
+                    <span class="stat-label">Archivos procesados:</span>
+                    <span class="stat-value">${result.totalFilesProcessed}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Tests generados:</span>
+                    <span class="stat-value">${result.totalTestsGenerated}</span>
+                </div>
+            `;
+
+            document.getElementById('resultStats').innerHTML = statsHtml;
+
+            const testsHtml = Object.entries(result.generatedTests)
+                .map(([name, code]) => `
+                    <div class="test-item">
+                        <div class="test-header">
+                            <strong>${name}</strong>
+                            <button class="btn-copy" onclick="copyCode('${name}')">Copiar</button>
+                        </div>
+                        <pre><code>${escapeHtml(code)}</code></pre>
+                    </div>
+                `).join('');
+
+            document.getElementById('testsList').innerHTML = testsHtml;
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        function showProgress() {
+            document.getElementById('progressSection').style.display = 'block';
+        }
+
+        function hideProgress() {
+            document.getElementById('progressSection').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorSection').style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorSection').style.display = 'none';
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function copyCode(testName) {
+            const code = generatedResult.generatedTests[testName];
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ Código copiado al portapapeles');
+            });
+        }
+    </script>
+</body>
+</html>
