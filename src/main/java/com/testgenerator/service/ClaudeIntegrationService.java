@@ -14,11 +14,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ClaudeIntegrationService {
+
+    private final GeminiTestGenerator geminiTestGenerator;
 
     private static final String CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 
@@ -38,11 +41,14 @@ public class ClaudeIntegrationService {
      */
     public String generateUnitTest(String javaSourceCode, String className) {
         try {
-            String prompt = buildPrompt(javaSourceCode, className);
-            
+//            String prompt = buildPrompt(javaSourceCode, className);
+            String prompt = geminiTestGenerator.buildPrompt(javaSourceCode, className);
+
             log.debug("Enviando solicitud a Claude para clase: {}", className);
 
-            String response = callClaudeAPI(prompt);
+//            String response = callClaudeAPI(prompt);
+//            String response = geminiTestGenerator.generateUnitTest(javaSourceCode, prompt);
+            String response = geminiTestGenerator.enviarSolicitudAGemini(prompt);
 
             log.info("Respuesta recibida de Claude para clase: {}", className);
             return response;

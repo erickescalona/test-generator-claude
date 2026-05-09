@@ -29,7 +29,7 @@ public class JavaAnalysisService {
                 ClassInfo classInfo = new ClassInfo();
                 classInfo.setName(classDecl.getNameAsString());
                 classInfo.setFilePath(filePath);
-                classInfo.setIsInterface(classDecl.isInterface());
+//                classInfo.setIsInterface(classDecl.isInterface());
 
                 List<MethodInfo> methods = new ArrayList<>();
 
@@ -38,8 +38,8 @@ public class JavaAnalysisService {
                     methodInfo.setName(method.getNameAsString());
                     methodInfo.setSignature(method.getSignature().toString());
                     methodInfo.setReturnType(method.getType().asString());
-                    methodInfo.setIsPublic(method.isPublic());
-                    methodInfo.setIsStatic(method.isStatic());
+//                    methodInfo.setIsPublic(method.isPublic());
+//                    methodInfo.setIsStatic(method.isStatic());
 
                     methods.add(methodInfo);
                 });

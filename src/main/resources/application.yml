@@ -34,3 +34,10 @@ logging:
   level:
     root: INFO
     com.testgenerator: DEBUG
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:AIzaSyAqo8JXqfAl5FchM4q9e15kl8uebnshhnI}
+    model: gemini-1.5-pro
+    max-tokens: 4096
+    timeout-seconds: 60
