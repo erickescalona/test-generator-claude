@@ -38,7 +38,11 @@ public class GeminiTestGenerator {
 
     @PostConstruct
     public void init() {
-        this.httpClient = new OkHttpClient();
+        this.httpClient = new OkHttpClient.Builder()
+                .callTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+                .writeTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+                .build();
 
         // Aquí apiKey ya NO es nulo
         this.model = GoogleAiGeminiChatModel.builder()
@@ -99,12 +103,6 @@ public class GeminiTestGenerator {
     }
 
     public String enviarSolicitudAGemini(String prompt) throws IOException, JSONException {
-        // Construir el payload JSON
-        JSONObject contenido = new JSONObject()
-                .put("parts", new JSONArray()
-                        .put(new JSONObject().put("text", prompt))
-                );
-
         JSONObject payload = new JSONObject()
                 .put("contents", new JSONArray()
                         .put(new JSONObject()
@@ -132,7 +130,21 @@ public class GeminiTestGenerator {
                 throw new IOException("Error en la API: Código " + response.code() + " - " + response.message());
             }
 
-            return response.body().string();
+            String jsonResponse = response.body().string();
+            JSONObject json = new JSONObject(jsonResponse);
+
+            // Extraer el texto de candidates[0].content.parts[0].text
+            JSONArray candidates = json.getJSONArray("candidates");
+            JSONObject candidate = candidates.getJSONObject(0);
+            JSONObject content = candidate.getJSONObject("content");
+            JSONArray parts = content.getJSONArray("parts");
+            JSONObject part = parts.getJSONObject(0);
+            String text = part.getString("text");
+
+            // Limpiar bloques markdown ```java ... ``` o ``` si existen
+            text = text.replaceAll("(?s)^```\\w*\\n?", "").replaceAll("(?s)```$", "").trim();
+
+            return text;
         }
     }
 

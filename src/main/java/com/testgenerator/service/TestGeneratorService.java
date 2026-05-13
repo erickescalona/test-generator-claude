@@ -22,7 +22,7 @@ public class TestGeneratorService {
     
     private final ZipHandlerService zipHandlerService;
     private final JavaAnalysisService javaAnalysisService;
-    private final ClaudeIntegrationService claudeIntegrationService;
+    private final GeminiIntegrationService geminiIntegrationService;
 
     @Value("${app.enable-code-analysis}")
     private boolean enableCodeAnalysis;
@@ -58,7 +58,7 @@ public class TestGeneratorService {
                 classAnalysis.put(filePath, classes);
 
                 // Generar tests
-                String testCode = claudeIntegrationService.generateUnitTest(sourceCode, 
+                String testCode = geminiIntegrationService.generateUnitTest(sourceCode, 
                     extractClassName(classes));
 
                 String testFileName = filePath.replace(".java", "Test.java");

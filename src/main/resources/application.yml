@@ -15,14 +15,6 @@ server:
   servlet:
     context-path: /
 
-# Configuración de Claude
-claude:
-  api:
-    key: ${CLAUDE_API_KEY:your-api-key-here}
-    model: claude-3-opus-20240229
-    max-tokens: 4096
-    timeout-seconds: 60
-
 # Configuración de la aplicación
 app:
   max-zip-size-mb: 100
