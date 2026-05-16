@@ -1,6 +1,6 @@
 package com.testgenerator.service;
 
-import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
+//import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +20,11 @@ public class GeminiTestGenerator {
 
 //    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
 //    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
     // Opción 1: Gemini 1.5 Flash (Sustituye a gemini-flash-latest)
-    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+//    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+//    private static final String API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
 
 // Opción 2: Gemini 1.5 Pro (Sustituye a gemini-pro)
 // private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent";
@@ -32,7 +34,7 @@ public class GeminiTestGenerator {
     @Value("${gemini.api.key}")
     private String apiKey;
 
-    private GoogleAiGeminiChatModel model;
+//    private GoogleAiGeminiChatModel model;
 
 //    public GeminiTestGenerator() {
 //        // Configuramos el modelo Gemini 1.5 Flash (rápido y económico para código)
@@ -52,18 +54,18 @@ public class GeminiTestGenerator {
                 .build();
 
         // Aquí apiKey ya NO es nulo
-        this.model = GoogleAiGeminiChatModel.builder()
-                .apiKey(apiKey)
-                .modelName("gemini-pro")
-                .logRequestsAndResponses(true)
-                .temperature(0.2)
-                .build();
+//        this.model = GoogleAiGeminiChatModel.builder()
+//                .apiKey(apiKey)
+//                .modelName("gemini-pro")
+//                .logRequestsAndResponses(true)
+//                .temperature(0.2)
+//                .build();
     }
 
     /**
      * Genera el código de un Unit Test a partir de un String que contiene la clase Java.
      */
-    public String generateUnitTest(String classSourceCode, String prompt) {
+//    public String generateUnitTest(String classSourceCode, String prompt) {
 //        String prompt = """
 //            Eres un experto en Java y Testing.
 //            A continuación te proporciono una clase de Java.
@@ -77,8 +79,8 @@ public class GeminiTestGenerator {
 //            ---
 //            """.formatted(classSourceCode);
 
-        return model.chat(prompt);
-    }
+//        return model.chat(prompt);
+//    }
 
     public String buildPrompt(String javaSourceCode, String className) {
         return String.format(
@@ -133,11 +135,15 @@ public class GeminiTestGenerator {
 
         // Ejecutar la solicitud
         try (Response response = httpClient.newCall(request).execute()) {
+
+            assert response.body() != null;
+            String jsonResponse = response.body().string();
+
             if (!response.isSuccessful()) {
+                log.error("Cuerpo del error: {} ", jsonResponse);
                 throw new IOException("Error en la API: Código " + response.code() + " - " + response.message());
             }
 
-            String jsonResponse = response.body().string();
             JSONObject json = new JSONObject(jsonResponse);
 
             // Extraer el texto de candidates[0].content.parts[0].text

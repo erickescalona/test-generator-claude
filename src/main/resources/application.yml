@@ -29,7 +29,7 @@ logging:
 
 gemini:
   api:
-    key: ${GEMINI_API_KEY:AIzaSyAqo8JXqfAl5FchM4q9e15kl8uebnshhnI}
+    key: ${GEMINI_API_KEY:AIzaSyAGc-dIT2Hrbd1VISSqUwUwIWedJdVqw30}
     model: gemini-1.5-pro
     max-tokens: 4096
     timeout-seconds: 60
