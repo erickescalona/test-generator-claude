@@ -19,7 +19,14 @@ import java.io.IOException;
 public class GeminiTestGenerator {
 
 //    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
-    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+//    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+
+    // Opción 1: Gemini 1.5 Flash (Sustituye a gemini-flash-latest)
+    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+
+// Opción 2: Gemini 1.5 Pro (Sustituye a gemini-pro)
+// private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent";
+
     private OkHttpClient httpClient;
 
     @Value("${gemini.api.key}")
